@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { windowHeight, windowWidth } from '../../constants/Dimension'
 import UserArea from '../../components/UserArea'
 import { colors } from '../../constants/colors'
-import { BLUE, BOTTOM_VERTICAL, FOUR, GREEN, HOME, ONE, RED, THREE, TOP_VERTICAL, TWO, YELLOW } from '../../constants/constant'
+import { BLUE, BOTTOM_VERTICAL, FINISHED, FOUR, GREEN, HOME, ONE, RED, THREE, TOP_VERTICAL, TWO, YELLOW } from '../../constants/constant'
 import VerticalCellContainer from '../../components/VerticalCellContainer/VerticalCellContainer'
 import HorizontalCellContainer from '../../components/HorizontalCellContainer/HorizontalCellContainer'
 
@@ -18,6 +18,7 @@ const BoardScreen = (props) => {
   const [isRolling, setisRolling] = useState(false)
   const [diceNumber, setdiceNumber] = useState(6)
   const [Moves, setMoves] = useState([])
+  const [AnimateForSelection, setAnimateForSelection] = useState(false)
 
   useEffect(() => {
   }, [])
@@ -42,6 +43,7 @@ const BoardScreen = (props) => {
   }
 
   const onDiceRoll = () => {
+    // setturn(() => (getNextTurn()));
     let RandomNumber = Math.floor(Math.random() * Math.floor(6))
     setdiceNumber(RandomNumber + 1)
     // setisRolling(true)
@@ -93,10 +95,64 @@ const BoardScreen = (props) => {
   }
 
 
-  const updatePlayerPieces = () => {
-    console.log('Updation Of Player Pieces');
+  const playerHadOptionForMoves = (player) => {
+    let countMovesOption = getCountMovesOption(player);
+    return countMovesOption > 1;
   }
 
+  const getCountMovesOption = (player) => {
+    const { one, two, three, four } = player.pieces;
+    let hasSix = Moves.filter(move => move == 6).length > 0
+
+    let countOfOptions = 0;
+    isMovePossibleForOption(one.position) ? countOfOptions++ : undefined;
+    isMovePossibleForOption(two.position) ? countOfOptions++ : undefined;
+    isMovePossibleForOption(three.position) ? countOfOptions++ : undefined;
+    isMovePossibleForOption(four.position) ? countOfOptions++ : undefined;
+    return countOfOptions;
+  }
+
+
+
+  const updatePlayerPieces = (player) => {
+    console.log('Updation Of Player Pieces');
+    if (Moves.length >= 1) {
+      if (!isPlayerFinished(player)) {
+        if (playerHadOptionForMoves(player)) {
+          setAnimateForSelection(true)
+        } else if (playerHasSinglePossibleMove(player)) {
+          if (playerHasSingleUnfinshedPiece(player)) {
+            let singlePossibleMove = getSinglePossibleMove(player)
+            if (singlePossibleMove) {
+              const indexOf = Moves.indexOf(singlePossibleMove.Move)
+              if (indexOf > - 1) {
+                Moves.splice(indexOf, 1)
+              }
+              movePieceByPosition(singlePossibleMove.piece, singlePossibleMove.Move)
+            }
+          } else {
+            if (Moves.length == 1) {
+              let piece = getPieseWithPossibleMove(player)
+              movePieceByPosition(piece, Moves.shift())
+            } else {
+              setAnimateForSelection(true)
+            }
+          }
+        } else {
+          setturn(() => (getNextTurn()));
+          setMoves([])
+          setAnimateForSelection(false)
+        }
+      } else {
+        setturn(() => (getNextTurn()));
+        setMoves([])
+        setAnimateForSelection(false)
+      }
+    } else {
+      setturn(() => (getNextTurn()))
+      setAnimateForSelection(false)
+    }
+  }
 
 
 
@@ -107,13 +163,13 @@ const BoardScreen = (props) => {
         <View style={styles.twoPlayerArea} >
           <UserArea userMetaData={initialPlayer.red} turn={turn} customStyle={{ borderTopLeftRadius: 20 }} />
           <VerticalCellContainer position={TOP_VERTICAL} />
-          <UserArea userMetaData={initialPlayer.yellow} customStyle={{ borderTopRightRadius: 20 }} />
+          <UserArea userMetaData={initialPlayer.yellow} turn={turn} customStyle={{ borderTopRightRadius: 20 }} />
         </View>
         <HorizontalCellContainer playerInfo={initialPlayer} turn={turn} isRolling={isRolling} diceNumber={diceNumber} onDiceRoll={onDiceRoll} />
         <View style={styles.twoPlayerArea} >
-          <UserArea userMetaData={initialPlayer.blue} customStyle={{ borderBottomLeftRadius: 20 }} />
+          <UserArea userMetaData={initialPlayer.blue} turn={turn} customStyle={{ borderBottomLeftRadius: 20 }} />
           <VerticalCellContainer position={BOTTOM_VERTICAL} />
-          <UserArea userMetaData={initialPlayer.green} customStyle={{ borderBottomRightRadius: 20 }} />
+          <UserArea userMetaData={initialPlayer.green} turn={turn} customStyle={{ borderBottomRightRadius: 20 }} />
         </View>
       </View>
     </View>

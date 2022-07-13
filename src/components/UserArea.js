@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { HOME } from '../constants/constant';
 import { colors } from '../constants/colors';
 
 const UserArea = ({ userMetaData, customStyle, turn }) => {
+
+    const [Color, setColor] = useState(turn)
 
     const renderPiece = (piece) => {
         if (piece.postion == HOME) {
@@ -20,12 +22,11 @@ const UserArea = ({ userMetaData, customStyle, turn }) => {
         );
     }
 
-    // customStyle.opacity = turn == userMetaData.player ? 1 : 0.6;
+    customStyle.opacity = turn === userMetaData.player ? 1 : 0.6;
 
 
     return (
-        <View style={[{ flex: 3, backgroundColor: userMetaData.color, }, customStyle]} >
-            {console.log(userMetaData, "here")}
+        <View style={[{ flex: 3, backgroundColor: userMetaData.color }, customStyle]} >
             <View style={styles.innerContainer} >
                 <View style={styles.piecesWrapper} >
                     {renderPiece(userMetaData.pieces.one)}
